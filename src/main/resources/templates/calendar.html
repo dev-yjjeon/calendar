@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Work Calendar</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css">
+	<link rel="stylesheet" href="/css/calendar.css">
+	<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+</head>
+<body>
+<main class="calendar-page">
+	<section class="calendar-shell" aria-label="업무 기록 캘린더">
+		<div id="calendar"></div>
+	</section>
+</main>
+
+<div class="modal-backdrop" id="workLogModal" aria-hidden="true">
+	<section class="work-log-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+		<form id="workLogForm">
+			<header class="modal-header">
+				<h2 id="modalTitle">업무 기록</h2>
+				<button class="icon-button" id="modalCloseButton" type="button" aria-label="닫기">×</button>
+			</header>
+
+			<div class="modal-body">
+				<label class="field">
+					<span>제목</span>
+					<input id="workLogTitle" name="title" type="text" required autocomplete="off">
+				</label>
+
+				<label class="field">
+					<span>내용</span>
+					<textarea id="workLogContent" name="content" rows="4"></textarea>
+				</label>
+
+				<div class="field-grid">
+					<label class="field">
+						<span>시작</span>
+						<input id="workLogStart" name="start" type="datetime-local" required>
+					</label>
+
+					<label class="field">
+						<span>종료</span>
+						<input id="workLogEnd" name="end" type="datetime-local" required>
+					</label>
+				</div>
+
+				<div class="field-grid">
+					<label class="field">
+						<span>카테고리</span>
+						<select id="workLogCategory" name="category">
+							<option value="개발">개발</option>
+							<option value="회의">회의</option>
+							<option value="문서">문서</option>
+							<option value="기타">기타</option>
+						</select>
+					</label>
+
+					<label class="field">
+						<span>상태</span>
+						<select id="workLogStatus" name="status">
+							<option value="계획">계획</option>
+							<option value="진행중">진행중</option>
+							<option value="완료">완료</option>
+							<option value="보류">보류</option>
+						</select>
+					</label>
+				</div>
+
+				<label class="checkbox-field">
+					<input id="workLogAllDay" name="allDay" type="checkbox">
+					<span>종일</span>
+				</label>
+			</div>
+
+			<footer class="modal-footer">
+				<button class="delete-button" id="deleteButton" type="button">삭제</button>
+				<div class="modal-actions">
+					<button class="secondary-button" id="cancelButton" type="button">취소</button>
+					<button class="primary-button" type="submit">저장</button>
+				</div>
+			</footer>
+		</form>
+	</section>
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		const calendarElement = document.getElementById('calendar');
+		const modalElement = document.getElementById('workLogModal');
+		const formElement = document.getElementById('workLogForm');
+		const modalTitleElement = document.getElementById('modalTitle');
+		const closeButton = document.getElementById('modalCloseButton');
+		const cancelButton = document.getElementById('cancelButton');
+		const deleteButton = document.getElementById('deleteButton');
+		const titleInput = document.getElementById('workLogTitle');
+		const contentInput = document.getElementById('workLogContent');
+		const startInput = document.getElementById('workLogStart');
+		const endInput = document.getElementById('workLogEnd');
+		const categoryInput = document.getElementById('workLogCategory');
+		const statusInput = document.getElementById('workLogStatus');
+		const allDayInput = document.getElementById('workLogAllDay');
+		let selectedEvent = null;
+
+		const calendar = new FullCalendar.Calendar(calendarElement, {
+			initialView: 'dayGridMonth',
+			locale: 'ko',
+			height: '100%',
+			nowIndicator: true,
+			editable: true,
+			selectable: true,
+			dayMaxEvents: true,
+			allDaySlot: true,
+			headerToolbar: {
+				left: 'prev,next today',
+				center: 'title',
+				right: 'dayGridMonth,timeGridWeek,timeGridDay'
+			},
+			buttonText: {
+				today: '오늘',
+				month: '월',
+				week: '주',
+				day: '일'
+			},
+			select: function (info) {
+				openCreateModal(info);
+			},
+			eventClick: function (info) {
+				openEditModal(info.event);
+			},
+			eventDrop: function (info) {
+				console.log('일정 이동:', info.event.title, info.event.start, info.event.end);
+			},
+			eventResize: function (info) {
+				console.log('시간 변경:', info.event.title, info.event.start, info.event.end);
+			}
+		});
+
+		calendar.render();
+
+		formElement.addEventListener('submit', function (event) {
+			event.preventDefault();
+			saveWorkLog();
+		});
+
+		closeButton.addEventListener('click', closeModal);
+		cancelButton.addEventListener('click', closeModal);
+
+		deleteButton.addEventListener('click', function () {
+			if (selectedEvent) {
+				selectedEvent.remove();
+			}
+
+			closeModal();
+		});
+
+		modalElement.addEventListener('click', function (event) {
+			if (event.target === modalElement) {
+				closeModal();
+			}
+		});
+
+		document.addEventListener('keydown', function (event) {
+			if (event.key === 'Escape' && modalElement.classList.contains('is-open')) {
+				closeModal();
+			}
+		});
+
+		function openCreateModal(info) {
+			selectedEvent = null;
+			modalTitleElement.textContent = '업무 기록 등록';
+			deleteButton.hidden = true;
+			formElement.reset();
+			startInput.value = toDateTimeLocalValue(info.start);
+			endInput.value = toDateTimeLocalValue(info.end || info.start);
+			allDayInput.checked = info.allDay;
+			openModal();
+		}
+
+		function openEditModal(event) {
+			selectedEvent = event;
+			modalTitleElement.textContent = '업무 기록 수정';
+			deleteButton.hidden = false;
+			titleInput.value = event.title;
+			contentInput.value = event.extendedProps.content || '';
+			startInput.value = toDateTimeLocalValue(event.start);
+			endInput.value = toDateTimeLocalValue(event.end || event.start);
+			categoryInput.value = event.extendedProps.category || '기타';
+			statusInput.value = event.extendedProps.status || '계획';
+			allDayInput.checked = event.allDay;
+			openModal();
+		}
+
+		function saveWorkLog() {
+			const workLog = {
+				title: titleInput.value.trim(),
+				start: startInput.value,
+				end: endInput.value,
+				allDay: allDayInput.checked,
+				extendedProps: {
+					content: contentInput.value.trim(),
+					category: categoryInput.value,
+					status: statusInput.value
+				}
+			};
+
+			if (!workLog.title) {
+				titleInput.focus();
+				return;
+			}
+
+			if (selectedEvent) {
+				selectedEvent.setProp('title', workLog.title);
+				selectedEvent.setStart(workLog.start);
+				selectedEvent.setEnd(workLog.end);
+				selectedEvent.setAllDay(workLog.allDay);
+				selectedEvent.setExtendedProp('content', workLog.extendedProps.content);
+				selectedEvent.setExtendedProp('category', workLog.extendedProps.category);
+				selectedEvent.setExtendedProp('status', workLog.extendedProps.status);
+			} else {
+				calendar.addEvent(workLog);
+			}
+
+			calendar.unselect();
+			closeModal();
+		}
+
+		function openModal() {
+			modalElement.classList.add('is-open');
+			modalElement.setAttribute('aria-hidden', 'false');
+			titleInput.focus();
+		}
+
+		function closeModal() {
+			modalElement.classList.remove('is-open');
+			modalElement.setAttribute('aria-hidden', 'true');
+			selectedEvent = null;
+			calendar.unselect();
+		}
+
+		function toDateTimeLocalValue(date) {
+			const year = date.getFullYear();
+			const month = String(date.getMonth() + 1).padStart(2, '0');
+			const day = String(date.getDate()).padStart(2, '0');
+			const hour = String(date.getHours()).padStart(2, '0');
+			const minute = String(date.getMinutes()).padStart(2, '0');
+
+			return `${year}-${month}-${day}T${hour}:${minute}`;
+		}
+	});
+</script>
+</body>
+</html>

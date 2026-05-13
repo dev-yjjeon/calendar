@@ -1,0 +1,236 @@
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	height: 100%;
+	margin: 0;
+}
+
+body {
+	background: #f6f8fb;
+	color: #1f2937;
+	font-family: Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+
+.calendar-page {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 24px;
+}
+
+.calendar-shell {
+	background: #ffffff;
+	border: 1px solid #dbe3ef;
+	border-radius: 8px;
+	flex: 1;
+	min-height: 0;
+	padding: 16px;
+}
+
+#calendar {
+	height: 100%;
+}
+
+.fc {
+	font-size: 14px;
+}
+
+.fc .fc-toolbar-title {
+	font-size: 22px;
+}
+
+.fc .fc-button {
+	border-radius: 6px;
+}
+
+.fc .fc-event {
+	cursor: pointer;
+}
+
+.modal-backdrop {
+	align-items: center;
+	background: rgba(15, 23, 42, 0.42);
+	display: none;
+	inset: 0;
+	justify-content: center;
+	padding: 24px;
+	position: fixed;
+	z-index: 1000;
+}
+
+.modal-backdrop.is-open {
+	display: flex;
+}
+
+.work-log-modal {
+	background: #ffffff;
+	border-radius: 8px;
+	box-shadow: 0 24px 80px rgba(15, 23, 42, 0.28);
+	max-width: 560px;
+	width: 100%;
+}
+
+.modal-header {
+	align-items: center;
+	border-bottom: 1px solid #e2e8f0;
+	display: flex;
+	justify-content: space-between;
+	padding: 18px 20px;
+}
+
+.modal-header h2 {
+	font-size: 18px;
+	margin: 0;
+}
+
+.icon-button {
+	align-items: center;
+	background: transparent;
+	border: 0;
+	color: #64748b;
+	cursor: pointer;
+	display: inline-flex;
+	font-size: 28px;
+	height: 36px;
+	justify-content: center;
+	line-height: 1;
+	width: 36px;
+}
+
+.icon-button:hover {
+	color: #0f172a;
+}
+
+.modal-body {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 20px;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.field span,
+.checkbox-field span {
+	color: #475569;
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.field input,
+.field select,
+.field textarea {
+	border: 1px solid #cbd5e1;
+	border-radius: 6px;
+	color: #1f2937;
+	font: inherit;
+	padding: 10px 12px;
+	width: 100%;
+}
+
+.field textarea {
+	resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+	border-color: #2563eb;
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+	outline: none;
+}
+
+.field-grid {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.checkbox-field {
+	align-items: center;
+	display: inline-flex;
+	gap: 8px;
+}
+
+.modal-footer {
+	align-items: center;
+	border-top: 1px solid #e2e8f0;
+	display: flex;
+	justify-content: space-between;
+	padding: 16px 20px;
+}
+
+.modal-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.primary-button,
+.secondary-button,
+.delete-button {
+	border: 0;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 700;
+	padding: 10px 14px;
+}
+
+.primary-button {
+	background: #2563eb;
+	color: #ffffff;
+}
+
+.primary-button:hover {
+	background: #1d4ed8;
+}
+
+.secondary-button {
+	background: #e2e8f0;
+	color: #334155;
+}
+
+.secondary-button:hover {
+	background: #cbd5e1;
+}
+
+.delete-button {
+	background: #dc2626;
+	color: #ffffff;
+}
+
+.delete-button:hover {
+	background: #b91c1c;
+}
+
+@media (max-width: 640px) {
+	.calendar-page {
+		padding: 12px;
+	}
+
+	.calendar-shell {
+		padding: 10px;
+	}
+
+	.field-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.modal-footer {
+		align-items: stretch;
+		flex-direction: column-reverse;
+		gap: 10px;
+	}
+
+	.modal-actions {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
