@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.dev.yjjeon.calendar.mapper.ScheduleMapper">
+
+    <!-- 일정 전체 조회 -->
+    <select id="findAll" resultType="io.github.dev.yjjeon.calendar.model.Schedule">
+        SELECT id, title, description, start_date, end_date, category, status, all_day, created_at, updated_at
+        FROM schedule
+    </select>
+
+    <!-- 일정 상세 조회 -->
+    <select id="findById" parameterType="long" resultType="io.github.dev.yjjeon.calendar.model.Schedule">
+        SELECT id, title, description, start_date, end_date, category, status, all_day, created_at, updated_at
+        FROM schedule
+        WHERE id = #{id}
+    </select>
+
+    <!-- 일정 등록 -->
+    <insert id="insert" parameterType="io.github.dev.yjjeon.calendar.model.Schedule" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schedule (title, description, start_date, end_date, category, status, all_day)
+        VALUES (#{title}, #{description}, #{startDate}, #{endDate}, #{category}, #{status}, #{allDay})
+    </insert>
+
+    <!-- 일정 수정 -->
+    <update id="update" parameterType="io.github.dev.yjjeon.calendar.model.Schedule">
+        UPDATE schedule
+        SET title = #{title},
+            description = #{description},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            category = #{category},
+            status = #{status},
+            all_day = #{allDay}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 일정 삭제 -->
+    <delete id="delete" parameterType="long">
+        DELETE FROM schedule
+        WHERE id = #{id}
+    </delete>
+
+</mapper>

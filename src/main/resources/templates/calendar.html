@@ -123,6 +123,32 @@
 				week: '주',
 				day: '일'
 			},
+			events: function(info, successCallback, failureCallback) {
+				fetch('/api/schedules')
+					.then(response => {
+						if (!response.ok) throw new Error('Network response was not ok');
+						return response.json();
+					})
+					.then(data => {
+						const events = data.map(schedule => ({
+							id: schedule.id,
+							title: schedule.title,
+							start: schedule.startDate,
+							end: schedule.endDate,
+							allDay: schedule.allDay,
+							extendedProps: {
+								content: schedule.description,
+								category: schedule.category,
+								status: schedule.status
+							}
+						}));
+						successCallback(events);
+					})
+					.catch(error => {
+						console.error('일정 조회 에러:', error);
+						failureCallback(error);
+					});
+			},
 			select: function (info) {
 				openCreateModal(info);
 			},
@@ -130,10 +156,10 @@
 				openEditModal(info.event);
 			},
 			eventDrop: function (info) {
-				console.log('일정 이동:', info.event.title, info.event.start, info.event.end);
+				updateEventTime(info.event);
 			},
 			eventResize: function (info) {
-				console.log('시간 변경:', info.event.title, info.event.start, info.event.end);
+				updateEventTime(info.event);
 			}
 		});
 
@@ -149,10 +175,24 @@
 
 		deleteButton.addEventListener('click', function () {
 			if (selectedEvent) {
-				selectedEvent.remove();
+				if (confirm('이 일정을 삭제하시겠습니까?')) {
+					fetch(`/api/schedules/${selectedEvent.id}`, {
+						method: 'DELETE'
+					})
+					.then(response => {
+						if (response.ok) {
+							calendar.refetchEvents();
+							closeModal();
+						} else {
+							alert('삭제에 실패했습니다.');
+						}
+					})
+					.catch(error => {
+						console.error('일정 삭제 에러:', error);
+						alert('삭제 처리 중 에러가 발생했습니다.');
+					});
+				}
 			}
-
-			closeModal();
 		});
 
 		modalElement.addEventListener('click', function (event) {
@@ -195,14 +235,12 @@
 		function saveWorkLog() {
 			const workLog = {
 				title: titleInput.value.trim(),
-				start: startInput.value,
-				end: endInput.value,
+				startDate: startInput.value,
+				endDate: endInput.value,
 				allDay: allDayInput.checked,
-				extendedProps: {
-					content: contentInput.value.trim(),
-					category: categoryInput.value,
-					status: statusInput.value
-				}
+				description: contentInput.value.trim(),
+				category: categoryInput.value,
+				status: statusInput.value
 			};
 
 			if (!workLog.title) {
@@ -210,20 +248,59 @@
 				return;
 			}
 
-			if (selectedEvent) {
-				selectedEvent.setProp('title', workLog.title);
-				selectedEvent.setStart(workLog.start);
-				selectedEvent.setEnd(workLog.end);
-				selectedEvent.setAllDay(workLog.allDay);
-				selectedEvent.setExtendedProp('content', workLog.extendedProps.content);
-				selectedEvent.setExtendedProp('category', workLog.extendedProps.category);
-				selectedEvent.setExtendedProp('status', workLog.extendedProps.status);
-			} else {
-				calendar.addEvent(workLog);
-			}
+			const url = selectedEvent ? `/api/schedules/${selectedEvent.id}` : '/api/schedules';
+			const method = selectedEvent ? 'PUT' : 'POST';
 
-			calendar.unselect();
-			closeModal();
+			fetch(url, {
+				method: method,
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(workLog)
+			})
+			.then(response => {
+				if (response.ok) {
+					calendar.refetchEvents();
+					closeModal();
+				} else {
+					alert('저장에 실패했습니다.');
+				}
+			})
+			.catch(error => {
+				console.error('일정 저장 에러:', error);
+				alert('저장 처리 중 에러가 발생했습니다.');
+			});
+		}
+
+		function updateEventTime(event) {
+			const workLog = {
+				title: event.title,
+				startDate: toDateTimeLocalValue(event.start),
+				endDate: toDateTimeLocalValue(event.end || event.start),
+				allDay: event.allDay,
+				description: event.extendedProps.content || '',
+				category: event.extendedProps.category || '기타',
+				status: event.extendedProps.status || '계획'
+			};
+
+			fetch(`/api/schedules/${event.id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(workLog)
+			})
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('드래그 업데이트 실패');
+				}
+				console.log('일정 시간이 성공적으로 동기화되었습니다.');
+			})
+			.catch(error => {
+				console.error('일정 드래그 업데이트 에러:', error);
+				alert('일정 시간 변경 내용 동기화에 실패했습니다.');
+				calendar.refetchEvents(); // 원래 위치 복구
+			});
 		}
 
 		function openModal() {
