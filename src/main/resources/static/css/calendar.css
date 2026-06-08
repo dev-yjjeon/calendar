@@ -234,3 +234,86 @@ body {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
+
+/* 진척률 입력 폼 스타일 개선 */
+.progress-field-container {
+	position: relative;
+}
+
+.progress-input-group {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.progress-input-group input[type="number"] {
+	width: 110px;
+	flex-shrink: 0;
+}
+
+.progress-input-group .unit {
+	font-weight: bold;
+	color: #475569;
+	font-size: 15px;
+	margin-right: 4px;
+}
+
+.progress-input-group input[type="range"] {
+	flex: 1;
+	height: 6px;
+	background: #e2e8f0;
+	border-radius: 4px;
+	outline: none;
+	cursor: pointer;
+	-webkit-appearance: none;
+}
+
+.progress-input-group input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	background: #2563eb;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: background 0.1s;
+}
+
+.progress-input-group input[type="range"]::-webkit-slider-thumb:hover {
+	background: #1d4ed8;
+}
+
+.progress-quick-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 6px;
+}
+
+.progress-quick-buttons .quick-btn {
+	background: #f1f5f9;
+	border: 1px solid #cbd5e1;
+	border-radius: 4px;
+	color: #475569;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 500;
+	padding: 4px 8px;
+	transition: all 0.15s;
+}
+
+.progress-quick-buttons .quick-btn:hover {
+	background: #e2e8f0;
+	color: #0f172a;
+	border-color: #94a3b8;
+}
+
+.progress-quick-buttons .quick-btn.action-add {
+	background: #eff6ff;
+	border-color: #bfdbfe;
+	color: #2563eb;
+}
+
+.progress-quick-buttons .quick-btn.action-add:hover {
+	background: #dbeafe;
+	color: #1d4ed8;
+}

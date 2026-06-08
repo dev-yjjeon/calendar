@@ -84,23 +84,21 @@
 					</label>
 				</div>
 
-				<label class="field">
+				<div class="field progress-field-container">
 					<span>진척률</span>
-					<select id="workLogProgressRate" name="progressRate">
-						<option value="">선택 안 함</option>
-						<option value="0">0%</option>
-						<option value="10">10%</option>
-						<option value="20">20%</option>
-						<option value="30">30%</option>
-						<option value="40">40%</option>
-						<option value="50">50%</option>
-						<option value="60">60%</option>
-						<option value="70">70%</option>
-						<option value="80">80%</option>
-						<option value="90">90%</option>
-						<option value="100">100%</option>
-					</select>
-				</label>
+					<div class="progress-input-group">
+						<input id="workLogProgressRate" name="progressRate" type="number" min="0" max="100" placeholder="선택 안 함" autocomplete="off">
+						<span class="unit">%</span>
+						<input id="workLogProgressSlider" type="range" min="0" max="100" step="1" value="0">
+					</div>
+					<div class="progress-quick-buttons">
+						<button type="button" class="quick-btn" data-value="25">25%</button>
+						<button type="button" class="quick-btn" data-value="50">50%</button>
+						<button type="button" class="quick-btn" data-value="75">75%</button>
+						<button type="button" class="quick-btn" data-value="100">100%</button>
+						<button type="button" class="quick-btn action-add" data-add="10">+10%</button>
+					</div>
+				</div>
 
 				<label class="field">
 					<span>보고서 표기 방식</span>
@@ -157,6 +155,7 @@
 		const reportIncludedInput = document.getElementById('workLogReportIncluded');
 		const incompleteListSelect = document.getElementById('workLogIncompleteList');
 		const incompleteField = document.getElementById('workLogIncompleteField');
+		const progressSlider = document.getElementById('workLogProgressSlider');
 		let selectedEvent = null;
 
 		const calendar = new FullCalendar.Calendar(calendarElement, {
@@ -307,6 +306,7 @@
 			reportDisplayTypeInput.value = event.extendedProps.reportDisplayType || 'PROGRESS';
 			allDayInput.checked = event.allDay;
 			reportIncludedInput.checked = event.extendedProps.reportIncluded !== false;
+			progressSlider.value = event.extendedProps.progressRate ?? 0;
 			updateProgressRateState();
 
 			incompleteField.style.display = 'none';
@@ -378,9 +378,11 @@
 		function updateProgressRateState() {
 			const progressEnabled = statusInput.value === '진행중';
 			progressRateInput.disabled = !progressEnabled;
+			progressSlider.disabled = !progressEnabled;
 
 			if (!progressEnabled) {
 				progressRateInput.value = '';
+				progressSlider.value = 0;
 			}
 		}
 
@@ -427,11 +429,42 @@
 			categoryInput.value = selectedOption.dataset.category || '기타';
 			statusInput.value = selectedOption.dataset.status || '계획';
 			progressRateInput.value = selectedOption.dataset.progressRate || '';
+			progressSlider.value = selectedOption.dataset.progressRate || 0;
 			contentInput.value = selectedOption.dataset.content || '';
 			reportDisplayTypeInput.value = selectedOption.dataset.reportDisplayType || 'PROGRESS';
 			reportIncludedInput.checked = selectedOption.dataset.reportIncluded === 'true';
 			
 			updateProgressRateState();
+		});
+
+		progressRateInput.addEventListener('input', function() {
+			let val = parseInt(this.value);
+			if (isNaN(val)) val = 0;
+			if (val < 0) val = 0;
+			if (val > 100) val = 100;
+			progressSlider.value = val;
+		});
+
+		progressSlider.addEventListener('input', function() {
+			progressRateInput.value = this.value;
+		});
+
+		document.querySelectorAll('.progress-quick-buttons .quick-btn').forEach(function(btn) {
+			btn.addEventListener('click', function() {
+				if (progressRateInput.disabled) return;
+				
+				if (this.dataset.value) {
+					progressRateInput.value = this.dataset.value;
+					progressSlider.value = this.dataset.value;
+				} else if (this.dataset.add) {
+					let currentVal = parseInt(progressRateInput.value);
+					if (isNaN(currentVal)) currentVal = 0;
+					let newVal = currentVal + parseInt(this.dataset.add);
+					if (newVal > 100) newVal = 100;
+					progressRateInput.value = newVal;
+					progressSlider.value = newVal;
+				}
+			});
 		});
 
 		function loadIncompleteWorkLogs() {
