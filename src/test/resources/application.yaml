@@ -1,14 +1,9 @@
 spring:
-  application:
-    name: calendar
   datasource:
-    url: jdbc:h2:file:./data/calendar
+    url: jdbc:h2:mem:calendar-test
     driver-class-name: org.h2.Driver
     username: sa
     password:
-  h2:
-    console:
-      enabled: true
   sql:
     init:
       mode: always

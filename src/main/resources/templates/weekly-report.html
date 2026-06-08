@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>주간보고서</title>
+	<link rel="stylesheet" href="/css/weekly-report.css">
+</head>
+<body>
+<main class="report-page">
+	<header class="report-toolbar">
+		<div class="toolbar-title">
+			<h1>주간보고서</h1>
+			<span>개발팀 주간회의 보고서</span>
+		</div>
+		<nav class="toolbar-actions" aria-label="화면 이동">
+			<a class="secondary-link" href="/calendar">캘린더</a>
+			<button class="primary-button" id="loadPreviewButton" type="button">자동 정리</button>
+		</nav>
+	</header>
+
+	<section class="report-meta" aria-label="보고서 기본 정보">
+		<label class="field">
+			<span>작성일자</span>
+			<input id="reportDate" type="date">
+		</label>
+		<label class="field">
+			<span>작성자</span>
+			<input id="writer" type="text" value="전영재">
+		</label>
+		<label class="field">
+			<span>금주 시작</span>
+			<input id="weekStart" type="date">
+		</label>
+		<label class="field">
+			<span>금주 종료</span>
+			<input id="weekEnd" type="date">
+		</label>
+		<label class="field">
+			<span>차주 시작</span>
+			<input id="nextWeekStart" type="date">
+		</label>
+		<label class="field">
+			<span>차주 종료</span>
+			<input id="nextWeekEnd" type="date">
+		</label>
+	</section>
+
+	<section class="workspace">
+		<aside class="work-log-panel" aria-label="캘린더 기록 후보">
+			<div class="section-title">
+				<h2>캘린더 기록</h2>
+				<select aria-label="후보 필터">
+					<option>전체</option>
+					<option>금주</option>
+					<option>차주</option>
+					<option>보고서 포함</option>
+				</select>
+			</div>
+
+			<div class="candidate-list" id="candidateList">
+				<p class="empty-message">자동 정리를 실행하면 캘린더 기록이 표시됩니다.</p>
+			</div>
+		</aside>
+
+		<section class="report-editor" aria-label="보고서 작성">
+			<section class="report-section">
+				<div class="section-title">
+					<h2>1. 업무 수명사항</h2>
+					<button class="line-button" type="button">행 추가</button>
+				</div>
+				<div class="table-wrap">
+					<table>
+						<thead>
+						<tr>
+							<th>NO</th>
+							<th>업무 수명사항</th>
+							<th>지시일</th>
+							<th>완료예정일</th>
+							<th>완료일</th>
+							<th>담당자</th>
+							<th>진행상태</th>
+							<th>비고</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr>
+							<td>1</td>
+							<td><input type="text"></td>
+							<td><input type="date"></td>
+							<td><input type="date"></td>
+							<td><input type="date"></td>
+							<td><input type="text"></td>
+							<td>
+								<select>
+									<option>진행중</option>
+									<option>완료</option>
+									<option>지연</option>
+								</select>
+							</td>
+							<td><input type="text"></td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<section class="report-section">
+				<div class="section-title">
+					<h2>2. 개발부 실적 및 계획</h2>
+					<button class="line-button" type="button">정리</button>
+				</div>
+				<div class="performance-grid">
+					<div class="performance-row">
+						<div class="work-type">프로젝트 일반</div>
+						<textarea data-work-type="프로젝트 일반" data-column="thisWeek"></textarea>
+						<textarea data-work-type="프로젝트 일반" data-column="nextWeek"></textarea>
+					</div>
+					<div class="performance-row">
+						<div class="work-type">프로젝트 지원협조</div>
+						<textarea data-work-type="프로젝트 지원협조" data-column="thisWeek"></textarea>
+						<textarea data-work-type="프로젝트 지원협조" data-column="nextWeek"></textarea>
+					</div>
+					<div class="performance-row">
+						<div class="work-type">유지보수</div>
+						<textarea data-work-type="유지보수" data-column="thisWeek"></textarea>
+						<textarea data-work-type="유지보수" data-column="nextWeek"></textarea>
+					</div>
+					<div class="performance-row">
+						<div class="work-type">일반업무</div>
+						<textarea data-work-type="일반업무" data-column="thisWeek"></textarea>
+						<textarea data-work-type="일반업무" data-column="nextWeek"></textarea>
+					</div>
+					<div class="performance-row">
+						<div class="work-type">공유</div>
+						<textarea data-work-type="공유" data-column="thisWeek"></textarea>
+						<textarea data-work-type="공유" data-column="nextWeek"></textarea>
+					</div>
+				</div>
+			</section>
+
+			<section class="report-section">
+				<div class="section-title">
+					<h2>3. 프로젝트 진행현황</h2>
+					<button class="line-button" type="button">행 추가</button>
+				</div>
+				<div class="table-wrap">
+					<table>
+						<thead>
+						<tr>
+							<th>NO</th>
+							<th>프로젝트</th>
+							<th>착수</th>
+							<th>분석</th>
+							<th>설계</th>
+							<th>개발</th>
+							<th>테스트</th>
+							<th>안정화</th>
+							<th>진행상태</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr>
+							<td>1</td>
+							<td><input type="text" value="비에스"></td>
+							<td><input type="number" min="0" max="100"></td>
+							<td><input type="number" min="0" max="100"></td>
+							<td><input type="number" min="0" max="100"></td>
+							<td><input type="number" min="0" max="100" value="100"></td>
+							<td><input type="number" min="0" max="100" value="100"></td>
+							<td><input type="number" min="0" max="100" value="70"></td>
+							<td>
+								<select>
+									<option>달성</option>
+									<option>진행중</option>
+									<option>지연</option>
+								</select>
+							</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<section class="report-section">
+				<div class="section-title">
+					<h2>4. 지연프로젝트</h2>
+					<button class="line-button" type="button">행 추가</button>
+				</div>
+				<div class="table-wrap">
+					<table>
+						<thead>
+						<tr>
+							<th>NO</th>
+							<th>프로젝트</th>
+							<th>구분</th>
+							<th>이슈내용</th>
+							<th>Gap 극복방안</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr>
+							<td>1</td>
+							<td><input type="text"></td>
+							<td><input type="text"></td>
+							<td><input type="text"></td>
+							<td><input type="text"></td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+		</section>
+	</section>
+</main>
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		const reportDateInput = document.getElementById('reportDate');
+		const weekStartInput = document.getElementById('weekStart');
+		const weekEndInput = document.getElementById('weekEnd');
+		const nextWeekStartInput = document.getElementById('nextWeekStart');
+		const nextWeekEndInput = document.getElementById('nextWeekEnd');
+		const loadPreviewButton = document.getElementById('loadPreviewButton');
+		const candidateList = document.getElementById('candidateList');
+		let loadedCandidates = [];
+
+		setDefaultDates();
+		loadPreviewButton.addEventListener('click', loadWeeklyPreview);
+		loadWeeklyPreview();
+
+		function setDefaultDates() {
+			const today = new Date();
+			const monday = getMonday(today);
+			const friday = addDays(monday, 4);
+			const nextMonday = addDays(monday, 7);
+			const nextFriday = addDays(nextMonday, 4);
+
+			reportDateInput.value = toDateValue(today);
+			weekStartInput.value = toDateValue(monday);
+			weekEndInput.value = toDateValue(friday);
+			nextWeekStartInput.value = toDateValue(nextMonday);
+			nextWeekEndInput.value = toDateValue(nextFriday);
+		}
+
+		function loadWeeklyPreview() {
+			const params = new URLSearchParams({
+				weekStart: weekStartInput.value,
+				weekEnd: weekEndInput.value,
+				nextWeekStart: nextWeekStartInput.value,
+				nextWeekEnd: nextWeekEndInput.value
+			});
+
+			fetch(`/api/reports/weekly/preview?${params}`)
+				.then(function (response) {
+					if (!response.ok) {
+						throw new Error('주간보고서 자동 정리에 실패했습니다.');
+					}
+
+					return response.json();
+				})
+				.then(function (preview) {
+					loadedCandidates = preview.candidates;
+					renderCandidates(preview.candidates);
+					renderSelectedRows();
+				});
+		}
+
+		function renderCandidates(candidates) {
+			candidateList.innerHTML = '';
+
+			if (candidates.length === 0) {
+				candidateList.innerHTML = '<p class="empty-message">선택한 기간에 보고서 포함 기록이 없습니다.</p>';
+				return;
+			}
+
+			for (const candidate of candidates) {
+				const item = document.createElement('label');
+				item.className = 'candidate-item';
+				item.innerHTML = `
+					<input type="checkbox" data-work-log-id="${candidate.id}" checked>
+					<span class="candidate-content">
+						<strong>${escapeHtml(candidate.title)}</strong>
+						<small>${formatCandidateMeta(candidate)}</small>
+					</span>
+				`;
+				candidateList.appendChild(item);
+			}
+
+			for (const checkbox of candidateList.querySelectorAll('[data-work-log-id]')) {
+				checkbox.addEventListener('change', renderSelectedRows);
+			}
+		}
+
+		function renderSelectedRows() {
+			const selectedIds = new Set(
+				Array.from(candidateList.querySelectorAll('[data-work-log-id]:checked'))
+					.map(function (checkbox) {
+						return Number(checkbox.dataset.workLogId);
+					})
+			);
+			const selectedCandidates = loadedCandidates.filter(function (candidate) {
+				return selectedIds.has(candidate.id);
+			});
+			const rows = buildRows(selectedCandidates);
+
+			for (const textarea of document.querySelectorAll('[data-work-type][data-column]')) {
+				textarea.value = '';
+			}
+
+			for (const row of rows) {
+				const thisWeekTextarea = document.querySelector(`[data-work-type="${row.workType}"][data-column="thisWeek"]`);
+				const nextWeekTextarea = document.querySelector(`[data-work-type="${row.workType}"][data-column="nextWeek"]`);
+
+				if (thisWeekTextarea) {
+					thisWeekTextarea.value = row.thisWeek || '';
+				}
+
+				if (nextWeekTextarea) {
+					nextWeekTextarea.value = row.nextWeek || '';
+				}
+			}
+		}
+
+		function buildRows(candidates) {
+			const workTypes = ['프로젝트 일반', '프로젝트 지원협조', '유지보수', '일반업무', '공유'];
+
+			return workTypes.map(function (workType) {
+				return {
+					workType: workType,
+					thisWeek: buildReportText(candidates, workType, 'thisWeek'),
+					nextWeek: buildReportText(candidates, workType, 'nextWeek')
+				};
+			});
+		}
+
+		function buildReportText(candidates, workType, column) {
+			const grouped = new Map();
+
+			for (const candidate of candidates) {
+				if (toWorkType(candidate.category) !== workType || toReportColumn(candidate) !== column) {
+					continue;
+				}
+
+				const projectName = candidate.projectName || '공통';
+
+				if (!grouped.has(projectName)) {
+					grouped.set(projectName, []);
+				}
+
+				grouped.get(projectName).push(candidate);
+			}
+
+			const blocks = [];
+			let projectNumber = 1;
+
+			for (const [projectName, workLogs] of grouped.entries()) {
+				const lines = [`${projectNumber}. ${projectName}`];
+
+				for (const workLog of workLogs) {
+					lines.push(`- ${formatReportLine(workLog, column)}`);
+				}
+
+				blocks.push(lines.join('\n'));
+				projectNumber++;
+			}
+
+			return blocks.join('\n\n');
+		}
+
+		function formatReportLine(candidate, column) {
+			const displayType = candidate.reportDisplayType || 'PROGRESS';
+
+			if (displayType === 'VISIT_DATE') {
+				return `${candidate.title}(${formatShortDate(candidate.start)})`;
+			}
+
+			if (displayType === 'DONE_STATUS') {
+				return `${candidate.title} (${candidate.status || '완료'})`;
+			}
+
+			if (displayType === 'DUE_DATE') {
+				return `${candidate.title} (~${formatShortDate(candidate.end)})`;
+			}
+
+			if (displayType === 'NONE') {
+				return candidate.title;
+			}
+
+			if (candidate.status === '완료') {
+				return `${candidate.title} (완료)`;
+			}
+
+			if (candidate.progressRate !== null) {
+				return `${candidate.title} (${candidate.progressRate}%)`;
+			}
+
+			if (column === 'nextWeek') {
+				return `${candidate.title} (~${formatShortDate(candidate.end)})`;
+			}
+
+			return candidate.title;
+		}
+
+		function toWorkType(category) {
+			if (category === '개발' || category === '문서') {
+				return '프로젝트 일반';
+			}
+
+			if (category === '지원') {
+				return '프로젝트 지원협조';
+			}
+
+			if (category === '유지보수') {
+				return '유지보수';
+			}
+
+			if (category === '공유') {
+				return '공유';
+			}
+
+			return '일반업무';
+		}
+
+		function toReportColumn(candidate) {
+			const workDate = candidate.start.slice(0, 10);
+
+			if (workDate >= nextWeekStartInput.value && workDate <= nextWeekEndInput.value) {
+				return 'nextWeek';
+			}
+
+			return 'thisWeek';
+		}
+
+		function formatCandidateMeta(candidate) {
+			const date = candidate.start.slice(0, 10);
+			const projectName = candidate.projectName || '공통';
+			const category = candidate.category || '기타';
+			const progress = candidate.progressRate === null ? '' : ` · ${candidate.progressRate}%`;
+
+			return `${date} · ${escapeHtml(projectName)} · ${escapeHtml(category)}${progress}`;
+		}
+
+		function getMonday(date) {
+			const nextDate = new Date(date);
+			const day = nextDate.getDay() || 7;
+			nextDate.setDate(nextDate.getDate() - day + 1);
+			return nextDate;
+		}
+
+		function addDays(date, days) {
+			const nextDate = new Date(date);
+			nextDate.setDate(nextDate.getDate() + days);
+			return nextDate;
+		}
+
+		function toDateValue(date) {
+			const year = date.getFullYear();
+			const month = String(date.getMonth() + 1).padStart(2, '0');
+			const day = String(date.getDate()).padStart(2, '0');
+
+			return `${year}-${month}-${day}`;
+		}
+
+		function formatShortDate(value) {
+			const date = new Date(value);
+
+			return `${date.getMonth() + 1}/${date.getDate()}`;
+		}
+
+		function escapeHtml(value) {
+			return String(value ?? '')
+				.replaceAll('&', '&amp;')
+				.replaceAll('<', '&lt;')
+				.replaceAll('>', '&gt;')
+				.replaceAll('"', '&quot;')
+				.replaceAll("'", '&#039;');
+		}
+	});
+</script>
+</body>
+</html>
