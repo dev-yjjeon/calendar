@@ -24,6 +24,13 @@
 			</header>
 
 			<div class="modal-body">
+				<label class="field" id="workLogIncompleteField">
+					<span>진행 중인 업무 불러오기</span>
+					<select id="workLogIncompleteList">
+						<option value="">-- 직접 입력 또는 업무 선택 --</option>
+					</select>
+				</label>
+
 				<label class="field">
 					<span>제목</span>
 					<input id="workLogTitle" name="title" type="text" required autocomplete="off">
@@ -148,6 +155,8 @@
 		const reportDisplayTypeInput = document.getElementById('workLogReportDisplayType');
 		const allDayInput = document.getElementById('workLogAllDay');
 		const reportIncludedInput = document.getElementById('workLogReportIncluded');
+		const incompleteListSelect = document.getElementById('workLogIncompleteList');
+		const incompleteField = document.getElementById('workLogIncompleteField');
 		let selectedEvent = null;
 
 		const calendar = new FullCalendar.Calendar(calendarElement, {
@@ -276,6 +285,10 @@
 			allDayInput.checked = false;
 			reportIncludedInput.checked = true;
 			updateProgressRateState();
+
+			incompleteField.style.display = 'block';
+			loadIncompleteWorkLogs();
+
 			openModal();
 		}
 
@@ -295,6 +308,9 @@
 			allDayInput.checked = event.allDay;
 			reportIncludedInput.checked = event.extendedProps.reportIncluded !== false;
 			updateProgressRateState();
+
+			incompleteField.style.display = 'none';
+
 			openModal();
 		}
 
@@ -398,6 +414,66 @@
 			modalElement.setAttribute('aria-hidden', 'true');
 			selectedEvent = null;
 			calendar.unselect();
+		}
+
+		incompleteListSelect.addEventListener('change', function() {
+			const selectedOption = this.options[this.selectedIndex];
+			if (!selectedOption.value) {
+				return;
+			}
+			
+			titleInput.value = selectedOption.dataset.title || '';
+			projectNameInput.value = selectedOption.dataset.projectName || '';
+			categoryInput.value = selectedOption.dataset.category || '기타';
+			statusInput.value = selectedOption.dataset.status || '계획';
+			progressRateInput.value = selectedOption.dataset.progressRate || '';
+			contentInput.value = selectedOption.dataset.content || '';
+			reportDisplayTypeInput.value = selectedOption.dataset.reportDisplayType || 'PROGRESS';
+			reportIncludedInput.checked = selectedOption.dataset.reportIncluded === 'true';
+			
+			updateProgressRateState();
+		});
+
+		function loadIncompleteWorkLogs() {
+			fetch('/api/work-logs/incomplete')
+				.then(function (response) {
+					if (!response.ok) {
+						throw new Error('미완료 업무 조회 실패');
+					}
+					return response.json();
+				})
+				.then(function (data) {
+					incompleteListSelect.innerHTML = '<option value="">-- 직접 입력 또는 업무 선택 --</option>';
+					
+					const uniqueLogs = new Map();
+					data.forEach(function (log) {
+						const key = `${log.title} | ${log.projectName || ''}`;
+						if (!uniqueLogs.has(key)) {
+							uniqueLogs.set(key, log);
+						}
+					});
+
+					uniqueLogs.forEach(function (log) {
+						const option = document.createElement('option');
+						option.value = log.id;
+						const progressText = log.progressRate !== null ? ` (${log.progressRate}%)` : '';
+						option.textContent = `[${log.projectName || '공통'}] ${log.title}${progressText}`;
+						
+						option.dataset.title = log.title;
+						option.dataset.projectName = log.projectName || '';
+						option.dataset.category = log.category || '기타';
+						option.dataset.status = log.status || '계획';
+						option.dataset.progressRate = log.progressRate ?? '';
+						option.dataset.content = log.content || '';
+						option.dataset.reportDisplayType = log.reportDisplayType || 'PROGRESS';
+						option.dataset.reportIncluded = log.reportIncluded;
+						
+						incompleteListSelect.appendChild(option);
+					});
+				})
+				.catch(function (error) {
+					console.error('미완료 업무 조회 에러:', error);
+				});
 		}
 
 		function toDateTimeLocalValue(date) {

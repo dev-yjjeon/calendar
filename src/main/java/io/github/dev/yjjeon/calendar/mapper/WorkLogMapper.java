@@ -113,4 +113,24 @@ public interface WorkLogMapper {
 	@Delete("DELETE FROM work_log WHERE id = #{id}")
 	void delete(Long id);
 
+	@Select("""
+		SELECT
+			id,
+			title,
+			content,
+			start_at,
+			end_at,
+			all_day,
+			project_name,
+			category,
+			status,
+			progress_rate,
+			report_display_type,
+			report_included
+		FROM work_log
+		WHERE status != '완료'
+		ORDER BY id DESC
+		""")
+	List<WorkLog> findIncomplete();
+
 }

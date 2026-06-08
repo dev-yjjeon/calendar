@@ -37,6 +37,11 @@ public class WorkLogApiController {
 		return workLogService.findBetween(start, end);
 	}
 
+	@GetMapping("/incomplete")
+	public List<WorkLogResponse> findIncomplete() {
+		return workLogService.findIncomplete();
+	}
+
 	@PostMapping
 	public WorkLogResponse create(@Valid @RequestBody WorkLogRequest request) {
 		return workLogService.create(request);

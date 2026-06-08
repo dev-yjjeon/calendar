@@ -59,6 +59,14 @@ public class WorkLogService {
 		workLogMapper.delete(id);
 	}
 
+	@Transactional(readOnly = true)
+	public List<WorkLogResponse> findIncomplete() {
+		return workLogMapper.findIncomplete()
+			.stream()
+			.map(WorkLogResponse::from)
+			.toList();
+	}
+
 	private WorkLog findById(Long id) {
 		WorkLog workLog = workLogMapper.findById(id);
 
