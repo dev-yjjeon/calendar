@@ -48,9 +48,18 @@
 
 				<div class="field-grid">
 					<label class="field">
-						<span>카테고리</span>
+						<span>프로젝트명</span>
+						<input id="workLogProjectName" name="projectName" type="text" autocomplete="off" placeholder="예: 비에스">
+					</label>
+
+					<label class="field">
+						<span>업무 분류</span>
 						<select id="workLogCategory" name="category">
 							<option value="개발">개발</option>
+							<option value="지원">지원</option>
+							<option value="유지보수">유지보수</option>
+							<option value="일반업무">일반업무</option>
+							<option value="공유">공유</option>
 							<option value="회의">회의</option>
 							<option value="문서">문서</option>
 							<option value="기타">기타</option>
@@ -68,9 +77,43 @@
 					</label>
 				</div>
 
+				<label class="field">
+					<span>진척률</span>
+					<select id="workLogProgressRate" name="progressRate">
+						<option value="">선택 안 함</option>
+						<option value="0">0%</option>
+						<option value="10">10%</option>
+						<option value="20">20%</option>
+						<option value="30">30%</option>
+						<option value="40">40%</option>
+						<option value="50">50%</option>
+						<option value="60">60%</option>
+						<option value="70">70%</option>
+						<option value="80">80%</option>
+						<option value="90">90%</option>
+						<option value="100">100%</option>
+					</select>
+				</label>
+
+				<label class="field">
+					<span>보고서 표기 방식</span>
+					<select id="workLogReportDisplayType" name="reportDisplayType">
+						<option value="PROGRESS">진척률</option>
+						<option value="VISIT_DATE">방문일</option>
+						<option value="DONE_STATUS">완료상태</option>
+						<option value="DUE_DATE">기간</option>
+						<option value="NONE">표기없음</option>
+					</select>
+				</label>
+
 				<label class="checkbox-field">
 					<input id="workLogAllDay" name="allDay" type="checkbox">
 					<span>종일</span>
+				</label>
+
+				<label class="checkbox-field">
+					<input id="workLogReportIncluded" name="reportIncluded" type="checkbox" checked>
+					<span>주간보고서 포함</span>
 				</label>
 			</div>
 
@@ -98,9 +141,13 @@
 		const contentInput = document.getElementById('workLogContent');
 		const startInput = document.getElementById('workLogStart');
 		const endInput = document.getElementById('workLogEnd');
+		const projectNameInput = document.getElementById('workLogProjectName');
 		const categoryInput = document.getElementById('workLogCategory');
 		const statusInput = document.getElementById('workLogStatus');
+		const progressRateInput = document.getElementById('workLogProgressRate');
+		const reportDisplayTypeInput = document.getElementById('workLogReportDisplayType');
 		const allDayInput = document.getElementById('workLogAllDay');
+		const reportIncludedInput = document.getElementById('workLogReportIncluded');
 		let selectedEvent = null;
 
 		const calendar = new FullCalendar.Calendar(calendarElement, {
@@ -113,9 +160,17 @@
 			dayMaxEvents: true,
 			allDaySlot: true,
 			headerToolbar: {
-				left: 'prev,next today',
+				left: 'prev,next today weeklyReport',
 				center: 'title',
 				right: 'dayGridMonth,timeGridWeek,timeGridDay'
+			},
+			customButtons: {
+				weeklyReport: {
+					text: '주간보고서',
+					click: function () {
+						window.location.href = '/reports/weekly';
+					}
+				}
 			},
 			buttonText: {
 				today: '오늘',
@@ -123,31 +178,19 @@
 				week: '주',
 				day: '일'
 			},
-			events: function(info, successCallback, failureCallback) {
-				fetch('/api/schedules')
-					.then(response => {
-						if (!response.ok) throw new Error('Network response was not ok');
+			events: function (info, successCallback, failureCallback) {
+				fetch(`/api/work-logs?start=${toDateTimeLocalValue(info.start)}&end=${toDateTimeLocalValue(info.end)}`)
+					.then(function (response) {
+						if (!response.ok) {
+							throw new Error('업무 기록 조회에 실패했습니다.');
+						}
+
 						return response.json();
 					})
-					.then(data => {
-						const events = data.map(schedule => ({
-							id: schedule.id,
-							title: schedule.title,
-							start: schedule.startDate,
-							end: schedule.endDate,
-							allDay: schedule.allDay,
-							extendedProps: {
-								content: schedule.description,
-								category: schedule.category,
-								status: schedule.status
-							}
-						}));
-						successCallback(events);
+					.then(function (workLogs) {
+						successCallback(workLogs.map(toCalendarEvent));
 					})
-					.catch(error => {
-						console.error('일정 조회 에러:', error);
-						failureCallback(error);
-					});
+					.catch(failureCallback);
 			},
 			select: function (info) {
 				openCreateModal(info);
@@ -156,10 +199,10 @@
 				openEditModal(info.event);
 			},
 			eventDrop: function (info) {
-				updateEventTime(info.event);
+				updateWorkLogTime(info.event, info.revert);
 			},
 			eventResize: function (info) {
-				updateEventTime(info.event);
+				updateWorkLogTime(info.event, info.revert);
 			}
 		});
 
@@ -170,28 +213,30 @@
 			saveWorkLog();
 		});
 
+		statusInput.addEventListener('change', updateProgressRateState);
 		closeButton.addEventListener('click', closeModal);
 		cancelButton.addEventListener('click', closeModal);
 
 		deleteButton.addEventListener('click', function () {
-			if (selectedEvent) {
-				if (confirm('이 일정을 삭제하시겠습니까?')) {
-					fetch(`/api/schedules/${selectedEvent.id}`, {
-						method: 'DELETE'
-					})
-					.then(response => {
-						if (response.ok) {
-							calendar.refetchEvents();
-							closeModal();
-						} else {
-							alert('삭제에 실패했습니다.');
-						}
-					})
-					.catch(error => {
-						console.error('일정 삭제 에러:', error);
-						alert('삭제 처리 중 에러가 발생했습니다.');
-					});
-				}
+			if (!selectedEvent) {
+				closeModal();
+				return;
+			}
+
+			if (confirm('이 업무 기록을 삭제하시겠습니까?')) {
+				fetch(`/api/work-logs/${selectedEvent.id}`, {
+					method: 'DELETE'
+				}).then(function (response) {
+					if (!response.ok) {
+						throw new Error('삭제에 실패했습니다.');
+					}
+
+					selectedEvent.remove();
+					closeModal();
+				}).catch(function (error) {
+					console.error(error);
+					alert('삭제 처리 중 오류가 발생했습니다.');
+				});
 			}
 		});
 
@@ -212,9 +257,25 @@
 			modalTitleElement.textContent = '업무 기록 등록';
 			deleteButton.hidden = true;
 			formElement.reset();
-			startInput.value = toDateTimeLocalValue(info.start);
-			endInput.value = toDateTimeLocalValue(info.end || info.start);
-			allDayInput.checked = info.allDay;
+			
+			let startDate = new Date(info.start);
+			let endDate = info.end ? new Date(info.end) : new Date(info.start);
+			
+			if (startDate.getHours() === 0 && startDate.getMinutes() === 0) {
+				startDate.setHours(9, 0, 0);
+				if (!info.end || (endDate.getTime() - startDate.getTime() <= 24*60*60*1000)) {
+					endDate = new Date(startDate);
+					endDate.setHours(18, 0, 0);
+				} else {
+					endDate.setHours(18, 0, 0);
+				}
+			}
+			
+			startInput.value = toDateTimeLocalValue(startDate);
+			endInput.value = toDateTimeLocalValue(endDate);
+			allDayInput.checked = false;
+			reportIncludedInput.checked = true;
+			updateProgressRateState();
 			openModal();
 		}
 
@@ -226,9 +287,14 @@
 			contentInput.value = event.extendedProps.content || '';
 			startInput.value = toDateTimeLocalValue(event.start);
 			endInput.value = toDateTimeLocalValue(event.end || event.start);
+			projectNameInput.value = event.extendedProps.projectName || '';
 			categoryInput.value = event.extendedProps.category || '기타';
 			statusInput.value = event.extendedProps.status || '계획';
+			progressRateInput.value = event.extendedProps.progressRate ?? '';
+			reportDisplayTypeInput.value = event.extendedProps.reportDisplayType || 'PROGRESS';
 			allDayInput.checked = event.allDay;
+			reportIncludedInput.checked = event.extendedProps.reportIncluded !== false;
+			updateProgressRateState();
 			openModal();
 		}
 
@@ -238,9 +304,13 @@
 				startDate: startInput.value,
 				endDate: endInput.value,
 				allDay: allDayInput.checked,
-				description: contentInput.value.trim(),
+				content: contentInput.value.trim(),
+				projectName: projectNameInput.value.trim(),
 				category: categoryInput.value,
-				status: statusInput.value
+				status: statusInput.value,
+				progressRate: progressRateInput.value ? Number(progressRateInput.value) : null,
+				reportDisplayType: reportDisplayTypeInput.value,
+				reportIncluded: reportIncludedInput.checked
 			};
 
 			if (!workLog.title) {
@@ -248,8 +318,8 @@
 				return;
 			}
 
-			const url = selectedEvent ? `/api/schedules/${selectedEvent.id}` : '/api/schedules';
 			const method = selectedEvent ? 'PUT' : 'POST';
+			const url = selectedEvent ? `/api/work-logs/${selectedEvent.id}` : '/api/work-logs';
 
 			fetch(url, {
 				method: method,
@@ -257,50 +327,64 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(workLog)
-			})
-			.then(response => {
-				if (response.ok) {
-					calendar.refetchEvents();
-					closeModal();
-				} else {
-					alert('저장에 실패했습니다.');
+			}).then(function (response) {
+				if (!response.ok) {
+					throw new Error('저장에 실패했습니다.');
 				}
-			})
-			.catch(error => {
-				console.error('일정 저장 에러:', error);
-				alert('저장 처리 중 에러가 발생했습니다.');
+
+				calendar.refetchEvents();
+				calendar.unselect();
+				closeModal();
+			}).catch(function (error) {
+				console.error(error);
+				alert('저장 처리 중 오류가 발생했습니다.');
 			});
 		}
 
-		function updateEventTime(event) {
-			const workLog = {
-				title: event.title,
-				startDate: toDateTimeLocalValue(event.start),
-				endDate: toDateTimeLocalValue(event.end || event.start),
-				allDay: event.allDay,
-				description: event.extendedProps.content || '',
-				category: event.extendedProps.category || '기타',
-				status: event.extendedProps.status || '계획'
-			};
-
-			fetch(`/api/schedules/${event.id}`, {
-				method: 'PUT',
+		function updateWorkLogTime(event, revert) {
+			fetch(`/api/work-logs/${event.id}/time`, {
+				method: 'PATCH',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(workLog)
-			})
-			.then(response => {
+				body: JSON.stringify({
+					start: toDateTimeLocalValue(event.start),
+					end: toDateTimeLocalValue(event.end || event.start),
+					allDay: event.allDay
+				})
+			}).then(function (response) {
 				if (!response.ok) {
-					throw new Error('드래그 업데이트 실패');
+					revert();
 				}
-				console.log('일정 시간이 성공적으로 동기화되었습니다.');
-			})
-			.catch(error => {
-				console.error('일정 드래그 업데이트 에러:', error);
-				alert('일정 시간 변경 내용 동기화에 실패했습니다.');
-				calendar.refetchEvents(); // 원래 위치 복구
-			});
+			}).catch(revert);
+		}
+
+		function updateProgressRateState() {
+			const progressEnabled = statusInput.value === '진행중';
+			progressRateInput.disabled = !progressEnabled;
+
+			if (!progressEnabled) {
+				progressRateInput.value = '';
+			}
+		}
+
+		function toCalendarEvent(workLog) {
+			return {
+				id: String(workLog.id),
+				title: workLog.title,
+				start: workLog.start,
+				end: workLog.end,
+				allDay: workLog.allDay,
+				extendedProps: {
+					content: workLog.content,
+					projectName: workLog.projectName,
+					category: workLog.category,
+					status: workLog.status,
+					progressRate: workLog.progressRate,
+					reportDisplayType: workLog.reportDisplayType,
+					reportIncluded: workLog.reportIncluded
+				}
+			};
 		}
 
 		function openModal() {
