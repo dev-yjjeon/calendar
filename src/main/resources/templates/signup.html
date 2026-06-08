@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - 캘린더 시스템</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --accent-hover: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --input-border: rgba(255, 255, 255, 0.1);
+            --input-focus: #818cf8;
+            --danger: #f87171;
+            --danger-bg: rgba(248, 113, 113, 0.1);
+            --success: #34d399;
+            --success-bg: rgba(52, 211, 153, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-primary);
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.15);
+            filter: blur(80px);
+            z-index: -1;
+        }
+        body::before {
+            top: 15%;
+            left: 20%;
+        }
+        body::after {
+            bottom: 15%;
+            right: 20%;
+            background: rgba(168, 85, 247, 0.15);
+        }
+
+        .signup-container {
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .signup-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .signup-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .signup-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .signup-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .signup-header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 15px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .alert-box {
+            display: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .alert-box.danger {
+            display: block;
+            background: var(--danger-bg);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+            color: var(--danger);
+        }
+
+        .alert-box.success {
+            display: block;
+            background: var(--success-bg);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            color: var(--success);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            background: var(--accent-primary);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        .signup-footer {
+            margin-top: 28px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .signup-footer a {
+            color: #818cf8;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            margin-left: 6px;
+        }
+
+        .signup-footer a:hover {
+            color: #a5b4fc;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="signup-container">
+    <div class="signup-card">
+        <div class="signup-header">
+            <h1>Create Account</h1>
+            <p>달력 및 업무보고서 관리 시스템</p>
+        </div>
+
+        <div id="alertBox" class="alert-box"></div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label for="username">사용자 ID</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="아이디를 입력하세요" required minlength="4">
+            </div>
+
+            <div class="form-group">
+                <label for="name">성명 (실명)</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="실명을 입력하세요" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="비밀번호를 입력하세요 (6자 이상)" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">비밀번호 확인</label>
+                <input type="password" id="confirmPassword" class="form-control" placeholder="비밀번호를 다시 입력하세요" required>
+            </div>
+
+            <button type="submit" class="btn-submit">회원가입</button>
+        </form>
+
+        <div class="signup-footer">
+            이미 계정이 있으신가요? 
+            <a th:href="@{/login}">로그인</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value.trim();
+        const name = document.getElementById('name').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const alertBox = document.getElementById('alertBox');
+
+        alertBox.style.display = 'none';
+        alertBox.className = 'alert-box';
+
+        if (password !== confirmPassword) {
+            alertBox.textContent = '비밀번호와 비밀번호 확인이 일치하지 않습니다.';
+            alertBox.classList.add('danger');
+            return;
+        }
+
+        const data = {
+            username: username,
+            name: name,
+            password: password
+        };
+
+        fetch('/api/users/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(async response => {
+            if (response.ok) {
+                alertBox.textContent = '회원가입이 완료되었습니다! 잠시 후 로그인 페이지로 이동합니다.';
+                alertBox.classList.add('success');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+            } else {
+                const text = await response.text();
+                alertBox.textContent = text || '회원가입 중 오류가 발생했습니다.';
+                alertBox.classList.add('danger');
+            }
+        })
+        .catch(err => {
+            alertBox.textContent = '서버와의 통신에 실패했습니다.';
+            alertBox.classList.add('danger');
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 package io.github.dev.yjjeon.calendar.controller;
 
+import io.github.dev.yjjeon.calendar.config.auth.CustomUserDetails;
 import io.github.dev.yjjeon.calendar.model.request.WorkLogRequest;
 import io.github.dev.yjjeon.calendar.model.request.WorkLogTimeRequest;
 import io.github.dev.yjjeon.calendar.model.response.WorkLogResponse;
@@ -8,6 +9,7 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -32,34 +34,35 @@ public class WorkLogApiController {
 	@GetMapping
 	public List<WorkLogResponse> findBetween(
 		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end
+		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		return workLogService.findBetween(start, end);
+		return workLogService.findBetween(userDetails.getId(), start, end);
 	}
 
 	@GetMapping("/incomplete")
-	public List<WorkLogResponse> findIncomplete() {
-		return workLogService.findIncomplete();
+	public List<WorkLogResponse> findIncomplete(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return workLogService.findIncomplete(userDetails.getId());
 	}
 
 	@PostMapping
-	public WorkLogResponse create(@Valid @RequestBody WorkLogRequest request) {
-		return workLogService.create(request);
+	public WorkLogResponse create(@Valid @RequestBody WorkLogRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+		return workLogService.create(userDetails.getId(), request);
 	}
 
 	@PutMapping("/{id}")
-	public WorkLogResponse update(@PathVariable Long id, @Valid @RequestBody WorkLogRequest request) {
-		return workLogService.update(id, request);
+	public WorkLogResponse update(@PathVariable Long id, @Valid @RequestBody WorkLogRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+		return workLogService.update(userDetails.getId(), id, request);
 	}
 
 	@PatchMapping("/{id}/time")
-	public WorkLogResponse updateTime(@PathVariable Long id, @Valid @RequestBody WorkLogTimeRequest request) {
-		return workLogService.updateTime(id, request);
+	public WorkLogResponse updateTime(@PathVariable Long id, @Valid @RequestBody WorkLogTimeRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+		return workLogService.updateTime(userDetails.getId(), id, request);
 	}
 
 	@DeleteMapping("/{id}")
-	public void delete(@PathVariable Long id) {
-		workLogService.delete(id);
+	public void delete(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+		workLogService.delete(userDetails.getId(), id);
 	}
 
 }

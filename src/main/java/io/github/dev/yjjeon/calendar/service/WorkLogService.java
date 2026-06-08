@@ -20,32 +20,33 @@ public class WorkLogService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<WorkLogResponse> findBetween(LocalDateTime start, LocalDateTime end) {
-		return workLogMapper.findBetween(start, end)
+	public List<WorkLogResponse> findBetween(Long userId, LocalDateTime start, LocalDateTime end) {
+		return workLogMapper.findBetween(userId, start, end)
 			.stream()
 			.map(WorkLogResponse::from)
 			.toList();
 	}
 
 	@Transactional
-	public WorkLogResponse create(WorkLogRequest request) {
+	public WorkLogResponse create(Long userId, WorkLogRequest request) {
 		WorkLog workLog = new WorkLog();
+		workLog.setUserId(userId);
 		applyRequest(workLog, request);
 		workLogMapper.insert(workLog);
 		return WorkLogResponse.from(workLog);
 	}
 
 	@Transactional
-	public WorkLogResponse update(Long id, WorkLogRequest request) {
-		WorkLog workLog = findById(id);
+	public WorkLogResponse update(Long userId, Long id, WorkLogRequest request) {
+		WorkLog workLog = findById(id, userId);
 		applyRequest(workLog, request);
 		workLogMapper.update(workLog);
 		return WorkLogResponse.from(workLog);
 	}
 
 	@Transactional
-	public WorkLogResponse updateTime(Long id, WorkLogTimeRequest request) {
-		WorkLog workLog = findById(id);
+	public WorkLogResponse updateTime(Long userId, Long id, WorkLogTimeRequest request) {
+		WorkLog workLog = findById(id, userId);
 		workLog.setStartAt(request.getStart());
 		workLog.setEndAt(request.getEnd());
 		workLog.setAllDay(request.isAllDay());
@@ -54,21 +55,21 @@ public class WorkLogService {
 	}
 
 	@Transactional
-	public void delete(Long id) {
-		findById(id);
-		workLogMapper.delete(id);
+	public void delete(Long userId, Long id) {
+		findById(id, userId);
+		workLogMapper.deleteByIdAndUserId(id, userId);
 	}
 
 	@Transactional(readOnly = true)
-	public List<WorkLogResponse> findIncomplete() {
-		return workLogMapper.findIncomplete()
+	public List<WorkLogResponse> findIncomplete(Long userId) {
+		return workLogMapper.findIncompleteByUserId(userId)
 			.stream()
 			.map(WorkLogResponse::from)
 			.toList();
 	}
 
-	private WorkLog findById(Long id) {
-		WorkLog workLog = workLogMapper.findById(id);
+	private WorkLog findById(Long id, Long userId) {
+		WorkLog workLog = workLogMapper.findByIdAndUserId(id, userId);
 
 		if (workLog == null) {
 			throw new IllegalArgumentException("업무 기록을 찾을 수 없습니다.");

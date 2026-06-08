@@ -32,9 +32,9 @@ public class WeeklyReportService {
 	}
 
 	@Transactional(readOnly = true)
-	public WeeklyReportPreviewResponse preview(LocalDate weekStart, LocalDate weekEnd, LocalDate nextWeekStart, LocalDate nextWeekEnd) {
-		List<WorkLog> rawThisWeekLogs = findReportLogs(weekStart, weekEnd);
-		List<WorkLog> rawNextWeekLogs = findReportLogs(nextWeekStart, nextWeekEnd);
+	public WeeklyReportPreviewResponse preview(Long userId, LocalDate weekStart, LocalDate weekEnd, LocalDate nextWeekStart, LocalDate nextWeekEnd) {
+		List<WorkLog> rawThisWeekLogs = findReportLogs(userId, weekStart, weekEnd);
+		List<WorkLog> rawNextWeekLogs = findReportLogs(userId, nextWeekStart, nextWeekEnd);
 
 		List<WorkLog> thisWeekLogs = filterLatestLogs(rawThisWeekLogs);
 		List<WorkLog> nextWeekLogs = filterLatestLogs(rawNextWeekLogs);
@@ -66,8 +66,8 @@ public class WeeklyReportService {
 		return new ArrayList<>(latestLogMap.values());
 	}
 
-	private List<WorkLog> findReportLogs(LocalDate start, LocalDate end) {
-		return workLogMapper.findBetween(start.atStartOfDay(), end.plusDays(1).atStartOfDay())
+	private List<WorkLog> findReportLogs(Long userId, LocalDate start, LocalDate end) {
+		return workLogMapper.findBetween(userId, start.atStartOfDay(), end.plusDays(1).atStartOfDay())
 			.stream()
 			.filter(WorkLog::isReportIncluded)
 			.toList();

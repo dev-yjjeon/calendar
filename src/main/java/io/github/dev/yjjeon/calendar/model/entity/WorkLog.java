@@ -6,6 +6,8 @@ public class WorkLog {
 
 	private Long id;
 
+	private Long userId;
+
 	private String title;
 
 	private String content;
@@ -122,6 +124,14 @@ public class WorkLog {
 
 	public void setReportIncluded(boolean reportIncluded) {
 		this.reportIncluded = reportIncluded;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 
 }

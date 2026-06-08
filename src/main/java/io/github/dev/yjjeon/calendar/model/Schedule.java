@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Schedule {
     private Long id;
+    private Long userId;
     private String title;
     private String description;
     private LocalDateTime startDate;

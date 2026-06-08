@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,9 +17,13 @@
 			<span>개발팀 주간회의 보고서</span>
 		</div>
 		<nav class="toolbar-actions" aria-label="화면 이동">
+			<span style="font-size:14px; color:#475569; margin-right:8px;"><strong sec:authentication="principal.name">홍길동</strong> 님</span>
 			<a class="secondary-link" href="/calendar">캘린더</a>
 			<button class="secondary-link" id="excelDownloadButton" type="button" style="border-color: #f97316; color: #f97316; font-weight: 700;">엑셀 다운로드</button>
 			<button class="primary-button" id="loadPreviewButton" type="button">자동 정리</button>
+			<form th:action="@{/logout}" method="post" style="display:inline-block; margin:0;">
+				<button class="secondary-link" type="submit" style="background:transparent; cursor:pointer;">로그아웃</button>
+			</form>
 		</nav>
 	</header>
 
@@ -30,7 +34,7 @@
 		</label>
 		<label class="field">
 			<span>작성자</span>
-			<input id="writer" type="text" value="전영재">
+			<input id="writer" type="text" th:value="${#authentication.principal.name}">
 		</label>
 		<label class="field">
 			<span>금주 시작</span>

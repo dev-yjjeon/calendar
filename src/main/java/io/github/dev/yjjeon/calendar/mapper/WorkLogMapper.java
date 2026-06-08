@@ -17,6 +17,7 @@ public interface WorkLogMapper {
 	@Select("""
 		SELECT
 			id,
+			user_id,
 			title,
 			content,
 			start_at,
@@ -29,15 +30,17 @@ public interface WorkLogMapper {
 			report_display_type,
 			report_included
 		FROM work_log
-		WHERE start_at < #{endAt}
+		WHERE user_id = #{userId}
+		  AND start_at < #{endAt}
 		  AND end_at > #{startAt}
 		ORDER BY start_at ASC
 		""")
-	List<WorkLog> findBetween(@Param("startAt") LocalDateTime startAt, @Param("endAt") LocalDateTime endAt);
+	List<WorkLog> findBetween(@Param("userId") Long userId, @Param("startAt") LocalDateTime startAt, @Param("endAt") LocalDateTime endAt);
 
 	@Select("""
 		SELECT
 			id,
+			user_id,
 			title,
 			content,
 			start_at,
@@ -50,12 +53,13 @@ public interface WorkLogMapper {
 			report_display_type,
 			report_included
 		FROM work_log
-		WHERE id = #{id}
+		WHERE id = #{id} AND user_id = #{userId}
 		""")
-	WorkLog findById(Long id);
+	WorkLog findByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 
 	@Insert("""
 		INSERT INTO work_log (
+			user_id,
 			title,
 			content,
 			start_at,
@@ -68,6 +72,7 @@ public interface WorkLogMapper {
 			report_display_type,
 			report_included
 		) VALUES (
+			#{userId},
 			#{title},
 			#{content},
 			#{startAt},
@@ -97,7 +102,7 @@ public interface WorkLogMapper {
 		    progress_rate = #{progressRate},
 		    report_display_type = #{reportDisplayType},
 		    report_included = #{reportIncluded}
-		WHERE id = #{id}
+		WHERE id = #{id} AND user_id = #{userId}
 		""")
 	void update(WorkLog workLog);
 
@@ -106,16 +111,17 @@ public interface WorkLogMapper {
 		SET start_at = #{startAt},
 		    end_at = #{endAt},
 		    all_day = #{allDay}
-		WHERE id = #{id}
+		WHERE id = #{id} AND user_id = #{userId}
 		""")
 	void updateTime(WorkLog workLog);
 
-	@Delete("DELETE FROM work_log WHERE id = #{id}")
-	void delete(Long id);
+	@Delete("DELETE FROM work_log WHERE id = #{id} AND user_id = #{userId}")
+	void deleteByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 
 	@Select("""
 		SELECT
 			id,
+			user_id,
 			title,
 			content,
 			start_at,
@@ -128,9 +134,9 @@ public interface WorkLogMapper {
 			report_display_type,
 			report_included
 		FROM work_log
-		WHERE status != '완료'
+		WHERE user_id = #{userId} AND status != '완료'
 		ORDER BY id DESC
 		""")
-	List<WorkLog> findIncomplete();
+	List<WorkLog> findIncompleteByUserId(Long userId);
 
 }
