@@ -4,7 +4,10 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>주간보고서</title>
-	<link rel="stylesheet" href="/css/weekly-report.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="/css/weekly-report.css?v=5">
 </head>
 <body>
 <main class="report-page">
@@ -15,6 +18,7 @@
 		</div>
 		<nav class="toolbar-actions" aria-label="화면 이동">
 			<a class="secondary-link" href="/calendar">캘린더</a>
+			<button class="secondary-link" id="excelDownloadButton" type="button" style="border-color: #f97316; color: #f97316; font-weight: 700;">엑셀 다운로드</button>
 			<button class="primary-button" id="loadPreviewButton" type="button">자동 정리</button>
 		</nav>
 	</header>
@@ -83,7 +87,7 @@
 							<th>비고</th>
 						</tr>
 						</thead>
-						<tbody>
+						<tbody id="instructionTableBody">
 						<tr>
 							<td>1</td>
 							<td><input type="text"></td>
@@ -159,7 +163,7 @@
 							<th>진행상태</th>
 						</tr>
 						</thead>
-						<tbody>
+						<tbody id="progressTableBody">
 						<tr>
 							<td>1</td>
 							<td><input type="text" value="비에스"></td>
@@ -198,7 +202,7 @@
 							<th>Gap 극복방안</th>
 						</tr>
 						</thead>
-						<tbody>
+						<tbody id="delayTableBody">
 						<tr>
 							<td>1</td>
 							<td><input type="text"></td>
@@ -216,17 +220,139 @@
 <script>
 	document.addEventListener('DOMContentLoaded', function () {
 		const reportDateInput = document.getElementById('reportDate');
+		const writerInput = document.getElementById('writer');
 		const weekStartInput = document.getElementById('weekStart');
 		const weekEndInput = document.getElementById('weekEnd');
 		const nextWeekStartInput = document.getElementById('nextWeekStart');
 		const nextWeekEndInput = document.getElementById('nextWeekEnd');
 		const loadPreviewButton = document.getElementById('loadPreviewButton');
+		const excelDownloadButton = document.getElementById('excelDownloadButton');
 		const candidateList = document.getElementById('candidateList');
 		let loadedCandidates = [];
 
 		setDefaultDates();
 		loadPreviewButton.addEventListener('click', loadWeeklyPreview);
+		excelDownloadButton.addEventListener('click', downloadExcel);
+
 		loadWeeklyPreview();
+
+		function downloadExcel() {
+			const request = {
+				reportDate: reportDateInput.value,
+				writer: writerInput.value.trim(),
+				weekStart: weekStartInput.value,
+				weekEnd: weekEndInput.value,
+				nextWeekStart: nextWeekStartInput.value,
+				nextWeekEnd: nextWeekEndInput.value,
+				instructions: [],
+				performances: [],
+				progresses: [],
+				delays: []
+			};
+
+			// 1. 업무 수명사항 수집
+			document.querySelectorAll('#instructionTableBody tr').forEach(tr => {
+				const cells = tr.querySelectorAll('td');
+				if (cells.length < 8) return;
+				const no = parseInt(cells[0].textContent.trim());
+				const content = cells[1].querySelector('input').value.trim();
+				const directedDate = cells[2].querySelector('input').value;
+				const dueDate = cells[3].querySelector('input').value;
+				const completeDate = cells[4].querySelector('input').value;
+				const assignee = cells[5].querySelector('input').value.trim();
+				const status = cells[6].querySelector('select').value;
+				const note = cells[7].querySelector('input').value.trim();
+
+				if (!content && !directedDate && !dueDate && !completeDate && !assignee && !note) {
+					return;
+				}
+
+				request.instructions.push({ no, content, directedDate, dueDate, completeDate, assignee, status, note });
+			});
+
+			// 2. 개발부 실적 및 계획 수집
+			document.querySelectorAll('.performance-row').forEach(row => {
+				const workType = row.querySelector('.work-type').textContent.trim();
+				const thisWeek = row.querySelector('textarea[data-column="thisWeek"]').value.trim();
+				const nextWeek = row.querySelector('textarea[data-column="nextWeek"]').value.trim();
+				request.performances.push({ workType, thisWeek, nextWeek });
+			});
+
+			// 3. 프로젝트 진행현황 수집
+			document.querySelectorAll('#progressTableBody tr').forEach(tr => {
+				const cells = tr.querySelectorAll('td');
+				if (cells.length < 9) return;
+				const no = parseInt(cells[0].textContent.trim());
+				const projectName = cells[1].querySelector('input').value.trim();
+				const startRate = cells[2].querySelector('input').value ? parseInt(cells[2].querySelector('input').value) : null;
+				const analysisRate = cells[3].querySelector('input').value ? parseInt(cells[3].querySelector('input').value) : null;
+				const designRate = cells[4].querySelector('input').value ? parseInt(cells[4].querySelector('input').value) : null;
+				const developRate = cells[5].querySelector('input').value ? parseInt(cells[5].querySelector('input').value) : null;
+				const testRate = cells[6].querySelector('input').value ? parseInt(cells[6].querySelector('input').value) : null;
+				const stabilizationRate = cells[7].querySelector('input').value ? parseInt(cells[7].querySelector('input').value) : null;
+				const status = cells[8].querySelector('select').value;
+
+				if (!projectName && startRate === null && analysisRate === null && designRate === null && developRate === null && testRate === null && stabilizationRate === null) {
+					return;
+				}
+
+				request.progresses.push({ no, projectName, startRate, analysisRate, designRate, developRate, testRate, stabilizationRate, status });
+			});
+
+			// 4. 지연 프로젝트 수집
+			document.querySelectorAll('#delayTableBody tr').forEach(tr => {
+				const cells = tr.querySelectorAll('td');
+				if (cells.length < 5) return;
+				const no = parseInt(cells[0].textContent.trim());
+				const projectName = cells[1].querySelector('input').value.trim();
+				const category = cells[2].querySelector('input').value.trim();
+				const issueContent = cells[3].querySelector('input').value.trim();
+				const recoveryPlan = cells[4].querySelector('input').value.trim();
+
+				if (!projectName && !category && !issueContent && !recoveryPlan) {
+					return;
+				}
+
+				request.delays.push({ no, projectName, category, issueContent, recoveryPlan });
+			});
+
+			excelDownloadButton.disabled = true;
+			excelDownloadButton.textContent = '다운로드 중...';
+
+			fetch('/api/reports/weekly/download', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(request)
+			})
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('엑셀 다운로드 처리 실패');
+				}
+				return response.blob();
+			})
+			.then(blob => {
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				const rawDate = request.reportDate ? request.reportDate : new Date().toISOString().slice(0, 10);
+				const dateStr = rawDate.replace(/-/g, '');
+				a.download = `${dateStr}_개발팀_주간혁신회의_${request.writer}.xlsx`;
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				window.URL.revokeObjectURL(url);
+			})
+			.catch(err => {
+				console.error(err);
+				alert('엑셀 파일 생성 중 오류가 발생했습니다.');
+			})
+			.finally(() => {
+				excelDownloadButton.disabled = false;
+				excelDownloadButton.textContent = '엑셀 다운로드';
+			});
+		}
 
 		function setDefaultDates() {
 			const today = new Date();
@@ -274,12 +400,16 @@
 			}
 
 			for (const candidate of candidates) {
-				const item = document.createElement('label');
+				const item = document.createElement('div');
 				item.className = 'candidate-item';
+				item.dataset.candidateId = candidate.id;
 				item.innerHTML = `
 					<input type="checkbox" data-work-log-id="${candidate.id}" checked>
 					<span class="candidate-content">
-						<strong>${escapeHtml(candidate.title)}</strong>
+						<span class="candidate-title-wrap">
+							<strong class="candidate-title" data-id="${candidate.id}">${escapeHtml(candidate.title)}</strong>
+							<button type="button" class="title-edit-btn" data-id="${candidate.id}" title="제목 수정">✏</button>
+						</span>
 						<small>${formatCandidateMeta(candidate)}</small>
 					</span>
 				`;
@@ -288,6 +418,42 @@
 
 			for (const checkbox of candidateList.querySelectorAll('[data-work-log-id]')) {
 				checkbox.addEventListener('change', renderSelectedRows);
+			}
+
+			for (const editBtn of candidateList.querySelectorAll('.title-edit-btn')) {
+				editBtn.addEventListener('click', function (e) {
+					e.stopPropagation();
+					const id = Number(this.dataset.id);
+					const titleEl = candidateList.querySelector(`.candidate-title[data-id="${id}"]`);
+					const candidate = loadedCandidates.find(c => c.id === id);
+					if (!titleEl || !candidate || titleEl.dataset.editing === 'true') return;
+
+					titleEl.dataset.editing = 'true';
+					const originalTitle = candidate.title;
+					const input = document.createElement('input');
+					input.type = 'text';
+					input.value = originalTitle;
+					input.className = 'candidate-title-input';
+
+					function saveTitle() {
+						const newTitle = input.value.trim() || originalTitle;
+						candidate.title = newTitle;
+						titleEl.textContent = newTitle;
+						delete titleEl.dataset.editing;
+						input.replaceWith(titleEl);
+						renderSelectedRows();
+					}
+
+					input.addEventListener('blur', saveTitle);
+					input.addEventListener('keydown', function (e) {
+						if (e.key === 'Enter') { e.preventDefault(); this.blur(); }
+						if (e.key === 'Escape') { input.value = originalTitle; this.blur(); }
+					});
+
+					titleEl.replaceWith(input);
+					input.focus();
+					input.select();
+				});
 			}
 		}
 
@@ -386,7 +552,7 @@
 				return candidate.title;
 			}
 
-			if (candidate.status === '완료') {
+			if (candidate.status === '완료' || candidate.progressRate === 100) {
 				return `${candidate.title} (완료)`;
 			}
 

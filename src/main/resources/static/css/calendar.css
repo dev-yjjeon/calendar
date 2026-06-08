@@ -9,9 +9,10 @@ body {
 }
 
 body {
-	background: #f6f8fb;
-	color: #1f2937;
-	font-family: Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+	background: #f1f5f9; /* Slate 100 */
+	color: #1e293b;
+	font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+	-webkit-font-smoothing: antialiased;
 }
 
 .calendar-page {
@@ -22,12 +23,13 @@ body {
 }
 
 .calendar-shell {
-	background: #ffffff;
-	border: 1px solid #dbe3ef;
-	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.95);
+	border: 1px solid rgba(226, 232, 240, 0.8);
+	border-radius: 16px;
+	box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
 	flex: 1;
 	min-height: 0;
-	padding: 16px;
+	padding: 24px;
 }
 
 #calendar {
@@ -36,29 +38,124 @@ body {
 
 .fc {
 	font-size: 14px;
+	--fc-border-color: #f1f5f9;
+	--fc-daygrid-event-dot-width: 8px;
 }
 
 .fc .fc-toolbar-title {
-	font-size: 22px;
+	font-family: 'Outfit', sans-serif;
+	font-weight: 800;
+	font-size: 24px;
+	color: #0f172a;
 }
 
 .fc .fc-button {
-	border-radius: 6px;
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	color: #475569;
+	border-radius: 8px;
+	font-weight: 600;
+	padding: 8px 14px;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+.fc .fc-button:hover {
+	background: #f8fafc;
+	border-color: #cbd5e1;
+	color: #0f172a;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+	background: #f97316; /* Orange 500 */
+	border-color: #f97316;
+	color: #ffffff;
+	box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
+.fc .fc-button-primary:focus,
+.fc .fc-button:focus {
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
+/* 주간보고서 버튼은 특별히 Orange 그라데이션 적용 */
+.fc .fc-weeklyReport-button {
+	background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+	border: 0 !important;
+	color: #ffffff !important;
+	font-weight: 700;
+	box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25) !important;
+}
+
+.fc .fc-weeklyReport-button:hover {
+	opacity: 0.95;
+	transform: translateY(-1px);
+	box-shadow: 0 6px 16px rgba(249, 115, 22, 0.35) !important;
+}
+
+.fc .fc-day-today {
+	background: rgba(249, 115, 22, 0.03) !important;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+	background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+	color: #ffffff !important;
+	border-radius: 50%;
+	width: 26px;
+	height: 26px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 4px;
+	font-weight: bold;
+	box-shadow: 0 2px 6px rgba(249, 115, 22, 0.3);
+}
+
+.fc-col-header-cell {
+	background: #f8fafc;
+	padding: 10px 0 !important;
+}
+
+.fc-col-header-cell-cmn {
+	color: #64748b;
+	font-weight: 700;
+	font-size: 13px;
+}
+
+/* 일정 이벤트 카드 주황색 테마 적용 */
 .fc .fc-event {
-	cursor: pointer;
+	border: 0;
+	border-radius: 6px;
+	padding: 4px 6px;
+	font-size: 12px;
+	font-weight: 600;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); /* Orange 100 ~ 200 */
+	color: #9a3412 !important; /* Orange 800 */
+	border-left: 3px solid #f97316; /* Orange 500 */
+}
+
+.fc .fc-event:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+	filter: brightness(0.97);
 }
 
 .modal-backdrop {
 	align-items: center;
-	background: rgba(15, 23, 42, 0.42);
+	background: rgba(15, 23, 42, 0.3);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
 	display: none;
 	inset: 0;
 	justify-content: center;
 	padding: 24px;
 	position: fixed;
 	z-index: 1000;
+	transition: all 0.3s;
 }
 
 .modal-backdrop.is-open {
@@ -67,48 +164,82 @@ body {
 
 .work-log-modal {
 	background: #ffffff;
-	border-radius: 8px;
-	box-shadow: 0 24px 80px rgba(15, 23, 42, 0.28);
+	border-radius: 16px;
+	border: 1px solid rgba(226, 232, 240, 0.8);
+	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
 	max-width: 560px;
 	width: 100%;
+	max-height: calc(100vh - 48px);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.work-log-modal form {
+	display: flex;
+	flex-direction: column;
+	max-height: 100%;
+	height: 100%;
+	width: 100%;
+	min-height: 0;
+	overflow: hidden;
 }
 
 .modal-header {
 	align-items: center;
-	border-bottom: 1px solid #e2e8f0;
+	border-bottom: 1px solid #f1f5f9;
 	display: flex;
 	justify-content: space-between;
-	padding: 18px 20px;
+	padding: 20px 24px;
 }
 
 .modal-header h2 {
-	font-size: 18px;
+	font-size: 20px;
 	margin: 0;
+	font-weight: 700;
 }
 
 .icon-button {
 	align-items: center;
-	background: transparent;
+	background: #f1f5f9;
 	border: 0;
 	color: #64748b;
 	cursor: pointer;
 	display: inline-flex;
-	font-size: 28px;
-	height: 36px;
+	font-size: 20px;
+	height: 32px;
 	justify-content: center;
 	line-height: 1;
-	width: 36px;
+	width: 32px;
+	border-radius: 50%;
+	transition: all 0.2s;
 }
 
 .icon-button:hover {
+	background: #e2e8f0;
 	color: #0f172a;
 }
 
 .modal-body {
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
-	padding: 20px;
+	gap: 16px;
+	padding: 24px;
+	overflow-y: auto;
+	flex: 1;
+	min-height: 0;
 }
 
 .field {
@@ -121,18 +252,20 @@ body {
 .checkbox-field span {
 	color: #475569;
 	font-size: 13px;
-	font-weight: 700;
+	font-weight: 600;
 }
 
 .field input,
 .field select,
 .field textarea {
-	border: 1px solid #cbd5e1;
-	border-radius: 6px;
-	color: #1f2937;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	color: #1e293b;
 	font: inherit;
-	padding: 10px 12px;
+	padding: 10px 14px;
 	width: 100%;
+	background-color: #f8fafc;
+	transition: all 0.2s;
 }
 
 .field textarea {
@@ -142,29 +275,45 @@ body {
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-	border-color: #2563eb;
-	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+	border-color: #f97316;
+	background-color: #ffffff;
+	box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
 	outline: none;
 }
 
 .field-grid {
 	display: grid;
-	gap: 12px;
+	gap: 14px;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 480px) {
+	.field-grid.three-cols {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
 }
 
 .checkbox-field {
 	align-items: center;
 	display: inline-flex;
 	gap: 8px;
+	cursor: pointer;
+}
+
+.checkbox-field input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	accent-color: #f97316;
+	cursor: pointer;
 }
 
 .modal-footer {
 	align-items: center;
-	border-top: 1px solid #e2e8f0;
+	border-top: 1px solid #f1f5f9;
 	display: flex;
 	justify-content: space-between;
-	padding: 16px 20px;
+	padding: 18px 24px;
+	background: #f8fafc;
 }
 
 .modal-actions {
@@ -176,20 +325,24 @@ body {
 .secondary-button,
 .delete-button {
 	border: 0;
-	border-radius: 6px;
+	border-radius: 8px;
 	cursor: pointer;
 	font-size: 14px;
-	font-weight: 700;
-	padding: 10px 14px;
+	font-weight: 600;
+	padding: 10px 16px;
+	transition: all 0.2s;
 }
 
 .primary-button {
-	background: #2563eb;
+	background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
 	color: #ffffff;
+	box-shadow: 0 4px 10px rgba(249, 115, 22, 0.2);
 }
 
 .primary-button:hover {
-	background: #1d4ed8;
+	opacity: 0.95;
+	transform: translateY(-1px);
+	box-shadow: 0 6px 14px rgba(249, 115, 22, 0.3);
 }
 
 .secondary-button {
@@ -202,12 +355,15 @@ body {
 }
 
 .delete-button {
-	background: #dc2626;
+	background: #ef4444;
 	color: #ffffff;
+	box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15);
 }
 
 .delete-button:hover {
-	background: #b91c1c;
+	background: #dc2626;
+	transform: translateY(-1px);
+	box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
 }
 
 @media (max-width: 640px) {
@@ -216,7 +372,8 @@ body {
 	}
 
 	.calendar-shell {
-		padding: 10px;
+		padding: 12px;
+		border-radius: 12px;
 	}
 
 	.field-grid {
@@ -227,6 +384,7 @@ body {
 		align-items: stretch;
 		flex-direction: column-reverse;
 		gap: 10px;
+		padding: 16px 20px;
 	}
 
 	.modal-actions {
@@ -235,7 +393,6 @@ body {
 	}
 }
 
-/* 진척률 입력 폼 스타일 개선 */
 .progress-field-container {
 	position: relative;
 }
@@ -243,77 +400,97 @@ body {
 .progress-input-group {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 12px;
 }
 
 .progress-input-group input[type="number"] {
-	width: 110px;
+	width: 120px;
 	flex-shrink: 0;
+	text-align: center;
+	font-weight: 700;
+	padding-left: 8px;
+	padding-right: 8px;
 }
 
 .progress-input-group .unit {
-	font-weight: bold;
-	color: #475569;
-	font-size: 15px;
+	font-weight: 800;
+	color: #f97316;
+	font-size: 16px;
 	margin-right: 4px;
 }
 
 .progress-input-group input[type="range"] {
 	flex: 1;
-	height: 6px;
+	height: 8px;
 	background: #e2e8f0;
-	border-radius: 4px;
+	border-radius: 99px;
 	outline: none;
 	cursor: pointer;
 	-webkit-appearance: none;
+	transition: background 0.2s;
 }
 
 .progress-input-group input[type="range"]::-webkit-slider-thumb {
 	-webkit-appearance: none;
-	width: 18px;
-	height: 18px;
+	width: 20px;
+	height: 20px;
 	border-radius: 50%;
-	background: #2563eb;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	transition: background 0.1s;
+	background: #f97316;
+	box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4);
+	transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+	border: 2px solid #ffffff;
 }
 
 .progress-input-group input[type="range"]::-webkit-slider-thumb:hover {
-	background: #1d4ed8;
+	background: #ea580c;
+	transform: scale(1.15);
 }
 
 .progress-quick-buttons {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 6px;
-	margin-top: 6px;
+	gap: 8px;
+	margin-top: 10px;
 }
 
 .progress-quick-buttons .quick-btn {
-	background: #f1f5f9;
-	border: 1px solid #cbd5e1;
-	border-radius: 4px;
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 99px;
 	color: #475569;
 	cursor: pointer;
 	font-size: 12px;
-	font-weight: 500;
-	padding: 4px 8px;
-	transition: all 0.15s;
+	font-weight: 600;
+	padding: 6px 14px;
+	transition: all 0.2s;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
 .progress-quick-buttons .quick-btn:hover {
-	background: #e2e8f0;
+	background: #f8fafc;
 	color: #0f172a;
-	border-color: #94a3b8;
+	border-color: #cbd5e1;
+	transform: translateY(-1px);
 }
 
 .progress-quick-buttons .quick-btn.action-add {
-	background: #eff6ff;
-	border-color: #bfdbfe;
-	color: #2563eb;
+	background: rgba(249, 115, 22, 0.06);
+	border-color: rgba(249, 115, 22, 0.2);
+	color: #f97316;
 }
 
 .progress-quick-buttons .quick-btn.action-add:hover {
-	background: #dbeafe;
-	color: #1d4ed8;
+	background: rgba(249, 115, 22, 0.1);
+	color: #ea580c;
+	border-color: rgba(249, 115, 22, 0.3);
+}
+
+.progress-quick-buttons .quick-btn:disabled,
+.progress-quick-buttons .quick-btn.action-add:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	transform: none;
+	background: #f1f5f9;
+	border-color: #e2e8f0;
+	color: #94a3b8;
 }

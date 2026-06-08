@@ -4,8 +4,11 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Work Calendar</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css">
-	<link rel="stylesheet" href="/css/calendar.css">
+	<link rel="stylesheet" href="/css/calendar.css?v=5">
 	<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
 </head>
 <body>
@@ -161,6 +164,10 @@
 		const calendar = new FullCalendar.Calendar(calendarElement, {
 			initialView: 'dayGridMonth',
 			locale: 'ko',
+			dayCellContent: function(info) {
+				return info.date.getDate();
+			},
+			fixedWeekCount: false,
 			height: '100%',
 			nowIndicator: true,
 			editable: true,
@@ -215,6 +222,19 @@
 		});
 
 		calendar.render();
+
+		// 마우스 휠 스크롤로 이전달/다음달 이동 (월 뷰이고 모달이 닫혀 있을 때만)
+		calendarElement.addEventListener('wheel', function (event) {
+			if (modalElement.classList.contains('is-open') || calendar.view.type !== 'dayGridMonth') {
+				return;
+			}
+			event.preventDefault();
+			if (event.deltaY > 0) {
+				calendar.next();
+			} else if (event.deltaY < 0) {
+				calendar.prev();
+			}
+		}, { passive: false });
 
 		formElement.addEventListener('submit', function (event) {
 			event.preventDefault();
