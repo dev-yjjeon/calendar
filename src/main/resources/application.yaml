@@ -11,7 +11,7 @@ spring:
     password: wjsdudwo
   sql:
     init:
-      mode: always
+      mode: never
 
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
